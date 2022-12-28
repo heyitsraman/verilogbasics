@@ -16,7 +16,7 @@ initial begin
 
     for (i=0;i<8;i=i+1) begin
         
-        SEL=$urandom() &4; A=$urandom() &255; 
+        SEL=$urandom() &3; A=$urandom() &255; 
         B=$urandom() &255; C=$urandom() &255; D=$urandom() &255; 
         #2;
     
