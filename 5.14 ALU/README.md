@@ -1,4 +1,4 @@
-To implement working of an ALU(Arithmetical Logical Unit) in Verilog
+To implement working of an ALU(Arithmetical Logical Unit) in Verilog.
 The operations performed alongwith the op-code numbers are mentioned below
 1. ADD A and B
 2. ADD A and B and Carry in
