@@ -7,3 +7,4 @@ This project covers the basic codes followed by some adavanced level codes which
 #### 4. Verilog Structural Design **(Module 4.1-4.6)**
 #### 5. Verilog Combinational Design **(Module 5.1-5.14)**
 #### 6. Verilog Sequential Design **(Module 6.1-6.16)**
+#### 7. Verilog Functions and Tasks **(Module 7.1-7.6)**
