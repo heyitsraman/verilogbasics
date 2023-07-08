@@ -9,3 +9,4 @@ This project covers the basic codes followed by some adavanced level codes which
 #### 6. Verilog Sequential Design **(Module 6.1-6.16)**
 #### 7. Verilog Functions and Tasks **(Module 7.1-7.6)**
 #### 8. Verilog Memory Design **(Module 8.1-8.5)**
+#### 9. Verilog Finite State Machine **(Module 9.1-9.4)**
