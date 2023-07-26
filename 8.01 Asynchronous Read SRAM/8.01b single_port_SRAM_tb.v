@@ -5,7 +5,7 @@ module single_SRAM_tb ();
 reg clk=0;
 reg [7:0] data_in;      //8-bit input data
 reg [3:0] address;      //for 16 locations
-reg write_en;
+reg control;
 wire [7:0] data_out;     //8-bit output word
 reg [1:0] delay;
 reg [7:0] wr_data;
@@ -14,7 +14,7 @@ integer i;
 
 //Instantiate the DUT
 single_SRAM dut (.clk(clk), .address(address), .data_in(data_in), .data_out(data_out), 
-                                               .write_en(write_en));
+                                               .control(control));
 
 
 //We will use no outputs as we will use the global variables
@@ -22,17 +22,18 @@ single_SRAM dut (.clk(clk), .address(address), .data_in(data_in), .data_out(data
 task write_data(input [3:0] address_in, input [7:0] d_in);
      begin
         @(posedge clk);             //sync to positive edge of clock
-        write_en = 1;
+        control = 1;
         address = address_in;
         data_in = d_in; 
+
+        @(posedge clk);
+        control =0;
      end
 endtask
 
 task read_data(input [3:0] address_in);
      begin
-        @(posedge clk);             //sync to positive edge of clock
-        write_en = 0;
-        address = address_in;
+          address = address_in;
      end
 endtask
 
@@ -68,13 +69,13 @@ initial begin
     success_count=0; error_count=0; test_count=0;
 
     #1;
-    for (i=0; i<17 ; i=i+1 ) begin
+    for (i=0; i<16 ; i=i+1 ) begin
+        
         wr_data = $random;
         write_data(i,wr_data);              //Write random data at an address
         read_data(i);                       //Read that address back
-        
-        #4;
-
+        @(posedge clk);
+        $display("i=%0d DATA OUT=%2x ",i, data_out);
         compare_data(i,wr_data,data_out);
         delay=$random;
         #(delay);                           //Wait between tests
