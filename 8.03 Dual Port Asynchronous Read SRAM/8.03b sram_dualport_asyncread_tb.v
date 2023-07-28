@@ -7,19 +7,20 @@ localparam DEPTH = 16;
 localparam DEPTH_LOG = $clog2(DEPTH);
 
 reg clk=0;
-reg write_en;
-reg [WIDTH-1:0] data_wr;
-wire [WIDTH-1:0] data_rd;
-reg [DEPTH_LOG-1:0] addr_rd, addr_wr;
+reg write_A, write_B;
+reg [WIDTH-1:0] data_wr_A, data_wr_B;
+wire [WIDTH-1:0] data_rd_A, data_rd_B;
+reg [DEPTH_LOG-1:0] addr_A, addr_B;
 
 integer i;
 integer num_tests=0, test_count=0, success_count=0, error_count=0;
-reg [DEPTH_LOG-1:0] rand_addr_wr;
+reg [DEPTH_LOG-1:0] rand_addr_A, rand_addr_B;
 
 //Instantiate the module
 sram_dp_asyncread #(.WIDTH(WIDTH), .DEPTH(DEPTH), .DEPTH_LOG(DEPTH_LOG)) 
-               dut (.clk(clk), .write_en(write_en), .data_wr(data_wr), .data_rd(data_rd),
-                    .addr_rd(addr_rd), .addr_wr(addr_wr));
+               dut (.clk(clk), .write_A(write_A), .write_B(write_B), .data_wr_A(data_wr_A), 
+                    .data_wr_B(data_wr_B), .data_rd_A(data_rd_A), .data_rd_B(data_rd_B), 
+                    .addr_A(addr_A), .addr_B(addr_B));
 
 
 //Clock signal
@@ -35,26 +36,29 @@ initial begin
         $monitor("Time=%0d",$time," Test-1 START");
         for (i=0; i<num_tests; i=i+1) begin
 
-            data_wr = $random;
+            data_wr_A = $random;
+            data_wr_B = $random;
 
-            write_data(data_wr,i);
-            read_data(i);
+            write_data(data_wr_A, data_wr_B,i,i+2);
+            read_data(i,i+2);
             #3;
             
-            compare_data(i,data_wr,data_rd);
+            compare_data(i,i+2,data_wr_A,data_wr_B,data_rd_A,data_rd_B);
 
         end
 
         $monitor("Time=%0d",$time," Test-2 START");
         for (i=0; i<num_tests; i=i+1) begin
 
-            rand_addr_wr = $random % DEPTH;
-            data_wr = (rand_addr_wr % 2) ? 4'hA : 4'h7;
+            rand_addr_A = $random % DEPTH;
+            rand_addr_B = $random % DEPTH;
+            data_wr_A = (rand_addr_A % 5) ? 4'hA : 4'h7;
+            data_wr_B = (rand_addr_B % 7) ? 4'hB : 4'h5;
 
-            write_data(data_wr,rand_addr_wr);
-            read_data(rand_addr_wr);
+            write_data(data_wr_A,data_wr_B,rand_addr_A,rand_addr_B);
+            read_data(rand_addr_A,rand_addr_B);
 
-            compare_data(rand_addr_wr,data_wr,data_rd);
+            compare_data(rand_addr_A,data_wr_A,rand_addr_B,data_wr_B,data_rd_A,data_rd_B);
                 
         end
 
@@ -70,51 +74,56 @@ end
 
 //Write Task
 task write_data;
-input [WIDTH-1:0] data_in;
-input [DEPTH_LOG-1:0] address_in;
+input [WIDTH-1:0] data_in_A, data_in_B;
+input [DEPTH_LOG-1:0] address_in_A, address_in_B;
 
     begin
         
         @(posedge clk);
-        write_en=1;
-        data_wr = data_in;
-        addr_wr = address_in;
+        write_A=1; write_B=1;
+        data_wr_A = data_in_A;
+        data_wr_B = data_in_B;
+        addr_A = address_in_A;
+        addr_B = address_in_B;
 
         @(posedge clk);
-        write_en=0;
+        write_A=0; write_B=0;
 
     end
 endtask
 
 //Read Task
 task read_data;
-input [DEPTH_LOG-1:0] address_in;
+input [DEPTH_LOG-1:0] address_in_A, address_in_B;
 
     begin
         
-        addr_rd = address_in;
+        addr_A = address_in_A;
+        addr_B = address_in_B;
 
     end
 endtask
 
 //Compare Write and Read Data
 task compare_data;
-input [DEPTH_LOG-1:0] address;
-input [WIDTH-1:0] expected_data;
-input [WIDTH-1:0] observed_data;
+input [DEPTH_LOG-1:0] address_A, address_B;
+input [WIDTH-1:0] expected_data_A, expected_data_B;
+input [WIDTH-1:0] observed_data_A, observed_data_B;
 
     begin
         
-        if (expected_data == observed_data) begin
-            $monitor("SUCCESS ADDRESS=%0d, EXPECTED DATA=%0x, OBSERVED DATA=%0x", 
-                        address, expected_data, observed_data);
+        if (expected_data_A == observed_data_A && expected_data_B == observed_data_B) begin
+            $monitor("SUCCESS ADDR_A=%0d, ED_A=%0x, OD_A=%0x, ADDR_B=%0d, ED_B=%0x, OD_B=%0x", 
+                        address_A, expected_data_A, observed_data_A, address_B, expected_data_B, 
+                        observed_data_B);
                         
             success_count = success_count + 1;
         end
 
         else begin
-            $monitor("ERROR ADDRESS=%0d, EXPECTED DATA=%0x, OBSERVED DATA=%0x", 
-                        address, expected_data, observed_data);
+            $monitor("ERROR ADDR_A=%0d, ED_A=%0x, OD_A=%0x, ADDR_B=%0d, ED_B=%0x, OD_B=%0x", 
+                        address_A, expected_data_A, observed_data_A, address_B, expected_data_B, 
+                        observed_data_B);
                         
             error_count = error_count + 1;
         end
