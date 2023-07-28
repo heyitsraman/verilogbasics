@@ -1,23 +1,26 @@
 module sram_dp_asyncread #(parameter WIDTH=8, parameter DEPTH=16,
-                            parameter DEPTH_LOG=$clog2(DEPTH)) (clk, write_en, addr_wr, 
-                                            addr_rd, data_wr, data_rd);
+                            parameter DEPTH_LOG=$clog2(DEPTH)) (clk, write_A,write_B,
+                             addr_A,addr_B, data_wr_A, data_wr_B, data_rd_A, data_rd_B);
 
 input clk;
-input write_en;
-input [DEPTH_LOG-1:0] addr_rd, addr_wr;
-input [WIDTH-1:0] data_wr;
-output [WIDTH-1:0] data_rd;
+input write_A, write_B;
+input [DEPTH_LOG-1:0] addr_A, addr_B;
+input [WIDTH-1:0] data_wr_A, data_wr_B;
+output [WIDTH-1:0] data_rd_A, data_rd_B;
 
 //Define the SRAM Array
 reg [WIDTH-1:0] ram [0:DEPTH-1];
 
 //Write is Synchronous
 always @(posedge clk) begin    
-        if(write_en)
-            ram[addr_wr] <= data_wr;
+        if(write_A)
+            ram[addr_A] <= data_wr_A;
+        if(write_B)
+            ram[addr_B] <= data_wr_B;
 end
 
 //Read is Asynchronous
-assign data_rd = ram[addr_rd];
+assign data_rd_A = ram[addr_A];
+assign data_rd_B = ram[addr_B];
 
 endmodule
